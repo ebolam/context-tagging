@@ -13,7 +13,24 @@ const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 const extensionSettings = extension_settings[extensionName];
 const defaultSettings = {};
 
+function mark_out_of_context(data) {
+  const siblings = [];
+  let prev = document.getElementsByClassName('lastInContext');
+  if (prev.length > 0) {
+    prev = prev[0].previousElementSibling;
+  }
+  while (prev) {
+    siblings.unshift(prev);
+    prev = prev.previousElementSibling;
+  }
 
+  document.querySelectorAll('.out-of-context').forEach(element => {
+    element.classList.remove('out-of-context');
+  });
+  for (const ooc of siblings) {
+    ooc.classList.add("out-of-context");
+  }
+}
  
 // Loads the extension settings if they exist, otherwise initializes them to the defaults.
 async function loadSettings() {
@@ -23,41 +40,14 @@ async function loadSettings() {
     Object.assign(extension_settings[extensionName], defaultSettings);
   }
 
-  // Updating settings in the UI
-  $("#example_setting").prop("checked", extension_settings[extensionName].example_setting).trigger("input");
-}
-
-// This function is called when the extension settings are changed in the UI
-function onExampleInput(event) {
-  const value = Boolean($(event.target).prop("checked"));
-  extension_settings[extensionName].example_setting = value;
-  saveSettingsDebounced();
-}
-
-// This function is called when the button is clicked
-function onButtonClick() {
-  // You can do whatever you want here
-  // Let's make a popup appear with the checked setting
-  toastr.info(
-    `The checkbox is ${extension_settings[extensionName].example_setting ? "checked" : "not checked"}`,
-    "A popup appeared because you clicked the button!"
-  );
-}
 
 // This function is called when the extension is loaded
 jQuery(async () => {
-  // This is an example of loading HTML from a file
-  const settingsHtml = await $.get(`${extensionFolderPath}/example.html`);
-
-  // Append settingsHtml to extensions_settings
-  // extension_settings and extensions_settings2 are the left and right columns of the settings menu
-  // Left should be extensions that deal with system functions and right should be visual/UI related 
-  $("#extensions_settings").append(settingsHtml);
-
-  // These are examples of listening for events
-  $("#my_button").on("click", onButtonClick);
-  $("#example_setting").on("input", onExampleInput);
-
   // Load settings when starting things up (if you have any)
   loadSettings();
+  
+  const { eventSource, event_types } = SillyTavern.getContext();
+  eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, mark_out_of_context);
+  eventSource.on(event_types.MORE_MESSAGES_LOADED, mark_out_of_context);
+  more_messages_loaded
 });
