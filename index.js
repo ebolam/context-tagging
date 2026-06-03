@@ -18,6 +18,8 @@ function mark_out_of_context(data) {
   let prev = document.getElementsByClassName('lastInContext');
   if (prev.length > 0) {
     prev = prev[0].previousElementSibling;
+  } else {
+    return;
   }
   while (prev) {
     siblings.unshift(prev);
@@ -27,11 +29,12 @@ function mark_out_of_context(data) {
   document.querySelectorAll('.out-of-context').forEach(element => {
     element.classList.remove('out-of-context');
   });
+  console.log(siblings);
   for (const ooc of siblings) {
     ooc.classList.add("out-of-context");
   }
 }
- 
+
 // Loads the extension settings if they exist, otherwise initializes them to the defaults.
 async function loadSettings() {
   //Create the settings if they don't exist
@@ -45,7 +48,7 @@ async function loadSettings() {
 jQuery(async () => {
   // Load settings when starting things up (if you have any)
   loadSettings();
-  
+
   const { eventSource, event_types } = SillyTavern.getContext();
   eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, mark_out_of_context);
   eventSource.on(event_types.MORE_MESSAGES_LOADED, mark_out_of_context);
