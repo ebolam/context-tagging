@@ -39,7 +39,7 @@ async function loadSettings() {
   if (Object.keys(extension_settings[extensionName]).length === 0) {
     Object.assign(extension_settings[extensionName], defaultSettings);
   }
-
+}
 
 // This function is called when the extension is loaded
 jQuery(async () => {
